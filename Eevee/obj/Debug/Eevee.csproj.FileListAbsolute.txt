@@ -1,0 +1,9 @@
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\bin\Debug\Eevee.exe.config
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.csprojResolveAssemblyReference.cache
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.Form1.resources
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.Properties.Resources.resources
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.csproj.GenerateResource.Cache
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\bin\Debug\Eevee.exe
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\bin\Debug\Eevee.pdb
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.exe
+c:\users\coltan\documents\visual studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.pdb
