@@ -9,8 +9,8 @@ namespace Eevee
 {
     class ipPingGraphic 
     {
-        ccIPAddress Source;
-        ccIPAddress Destination;
+        IPRecord Source;
+        IPRecord Destination;
         float windowWidth;
         float windowHeight;
         double val = 1.0;
@@ -19,7 +19,7 @@ namespace Eevee
 
         public ipPingGraphic next;
 
-        public ipPingGraphic(ccIPAddress s, ccIPAddress d,  Point size)
+        public ipPingGraphic(IPRecord s, IPRecord d,  Point size)
         {
             Source = s;
             Destination = d;

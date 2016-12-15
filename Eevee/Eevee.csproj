@@ -71,12 +71,27 @@
     <Compile Include="ccIPAddress.cs" />
     <Compile Include="IPHeader.cs" />
     <Compile Include="ipPingGraphic.cs" />
+    <Compile Include="IPRecord.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="IPRecord.Designer.cs">
+      <DependentUpon>IPRecord.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SocketMonitor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SocketMonitor.Designer.cs">
+      <DependentUpon>SocketMonitor.cs</DependentUpon>
+    </Compile>
     <Compile Include="TCPHeader.cs" />
     <Compile Include="UDPHeader.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IPRecord.resx">
+      <DependentUpon>IPRecord.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

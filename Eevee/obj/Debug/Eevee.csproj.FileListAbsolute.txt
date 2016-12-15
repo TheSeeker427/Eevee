@@ -16,3 +16,4 @@ C:\Users\carr4\Documents\Visual Studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee
 C:\Users\carr4\Documents\Visual Studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.csproj.GenerateResource.Cache
 C:\Users\carr4\Documents\Visual Studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.exe
 C:\Users\carr4\Documents\Visual Studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.pdb
+C:\Users\carr4\Documents\Visual Studio 2015\Projects\Eevee\Eevee\obj\Debug\Eevee.IPRecord.resources

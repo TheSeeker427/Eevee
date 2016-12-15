@@ -24,18 +24,32 @@ namespace Eevee
     public partial class Form1 : Form
     {
         Graphics grap;
-        ccIPAddress[] ipList = new ccIPAddress[300];
+        IPRecord[] ipList = new IPRecord[300];
         ipPingGraphic ipPingHead, ipPing;
+        
         int IPListIndex = 0;
 
         String loggingMessage = "";
 
+        FlowLayoutPanel ipPanel = new FlowLayoutPanel();
+        static Form1 myself;
         public Form1()
         {
 
             InitializeComponent();
 
-            SnifferForm_Load();
+            myself = this;
+
+            ipPanel.AutoScroll = true;
+            
+            
+            panel2.Controls.Add(ipPanel);
+            Label l = new Label();
+            l.ForeColor = Color.Lime;
+            l.Text = "IP Addresses: ";
+            ipPanel.Controls.Add(l);
+
+            //SnifferForm_Load();
             pictureBox1.Size = panel1.Size;
             grap = pictureBox1.CreateGraphics();
             pictureBox1.Paint += Panel1_Paint;
@@ -48,14 +62,34 @@ namespace Eevee
             this.pictureBox1.MouseDown += Panel1_MouseDown;
             this.pictureBox1.MouseUp += Panel1_MouseUp;
             this.pictureBox1.MouseMove += Panel1_MouseMove;
+            ipPanel.Size = panel2.Size;
 
-            ccIPAddress s = new ccIPAddress();
-            ipList[0] = new ccIPAddress();
+            IPRecord s = new IPRecord();
+            ipList[0] = new IPRecord();
             s.loc = "loc\": \"48.6801,-100.1206\"";
             ipList[0].loc = "loc\": \"28.6801,-81.1206\"";
             ipList[0].ip = "10.252.16.57";
             ipPingHead = new ipPingGraphic(ipList[0], s, new Point(pictureBox1.Width, pictureBox1.Height));
         }
+
+        public static Form1 getInstance()
+        {
+            return myself;
+        }
+
+        public void updateInfoTab(IPRecord i)
+        {
+            IPInfoLabel.Text = "IP Address: " + i.ip + "\r\nOrg:" + i.org +
+            "\r\nCountry: " + i.country + 
+            "\r\nhostname: " + i.hostname +
+            "\r\nProcess: " + i.processName +
+            "\r\nProcess ID: " + i.processId +
+            "\r\nPort: " + i.port;
+
+            //Console.WriteLine(TCPMonitor.)
+        }
+
+
         public void log(String text)
         {
             richTextBox1.Text += text+"\n";
@@ -108,7 +142,7 @@ namespace Eevee
             {
                 grap.ResetTransform();
                 grap = pictureBox1.CreateGraphics();
-                foreach (ccIPAddress ip in ipList)
+                foreach (IPRecord ip in ipList)
                 {
                     if (ip != null)
                     map_refresh(28.564100265503, -81.211402893066, ip.getLat(), ip.getLon(), ip);
@@ -120,7 +154,7 @@ namespace Eevee
             }
         }
 
-        public void map_refresh(double latIn, double LongIn, double latOut, double longOut, ccIPAddress ip)
+        public void map_refresh(double latIn, double LongIn, double latOut, double longOut, IPRecord ip)
         {
 
             double lat = -latIn * (Convert.ToDouble(panel1.Height) / 180);
@@ -143,12 +177,13 @@ namespace Eevee
         public void updateListBox()
         {
 
-            foreach (ccIPAddress ip in ipList)
+            foreach (IPRecord ip in ipList)
             {
                 if (ip == null)
                     break;
                 if (!listBox1.Items.Contains(ip.ip)) {
                     listBox1.Items.Add(ip.ip);
+                    ipPanel.Controls.Add(ip);
                 }
             }
         }
@@ -193,7 +228,7 @@ namespace Eevee
         private void listBox1_Changed(object sender, EventArgs e)
         {
 
-            foreach (ccIPAddress ip in ipList)
+            foreach (IPRecord ip in ipList)
             {
                 try
                 {
@@ -225,7 +260,7 @@ namespace Eevee
             using (StreamReader stream = new StreamReader(response.GetResponseStream()))
             {
                 string line;
-                ipList[IPListIndex] = new ccIPAddress();
+                ipList[IPListIndex] = new IPRecord();
                 int n = 0;
                 while ((line = stream.ReadLine()) != null)
                 {
@@ -264,7 +299,7 @@ namespace Eevee
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            foreach (ccIPAddress ip in ipList)
+            foreach (IPRecord ip in ipList)
             {
                 try
                 {
@@ -282,20 +317,13 @@ namespace Eevee
             }
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-            ipPing.start(grap);
-            map_refresh(28.564100265503, -81.211402893066, 48.0, -100, new ccIPAddress());
-        }
-
         public void updateTCPConnections()
         {
 
             Console.WriteLine("Active TCP Connections");
             IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
             TcpConnectionInformation[] connections = properties.GetActiveTcpConnections();
-
+            
             foreach (TcpConnectionInformation c in connections)
             {
                 if (c.RemoteEndPoint.ToString().Contains("."))
@@ -306,7 +334,7 @@ namespace Eevee
                         //    c.RemoteEndPoint.ToString().Remove(c.RemoteEndPoint.ToString().IndexOf(":")));
                         String ip = c.RemoteEndPoint.ToString().Remove(c.RemoteEndPoint.ToString().IndexOf(":"));
                         bool found = false;
-                        foreach(ccIPAddress i in ipList)
+                        foreach(IPRecord i in ipList)
                         {
                             if (i == null)
                                 break;
@@ -349,6 +377,28 @@ namespace Eevee
             timeCount++;
             map_refresh();
             updateListBox();
+            updateTCPConn();
+            
+        }
+
+        public void updateTCPConn()
+        {
+            foreach (SocketMonitor.TcpProcessRecord i in SocketMonitor.GetAllTcpConnections())
+            {
+                foreach (IPRecord ip in ipList)
+                {
+                    if(ip == null)
+                    {
+                        break;
+                    }
+                    if (ip.ip.Contains(i.LocalAddress.ToString()) || ip.ip.Contains(i.RemoteAddress.ToString()))
+                    {
+                        ip.processName = i.ProcessName;
+                        ip.port = i.LocalPort + "";
+                        ip.processId = i.ProcessId + "";
+                    }
+                }
+            }
         }
 
 
@@ -376,11 +426,6 @@ namespace Eevee
                     interfacecomboBox.Items.Add(strIP);
                 }
             }
-        }
-
-        private void btnStart_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void OnReceive(IAsyncResult ar)
@@ -416,7 +461,7 @@ namespace Eevee
         public void sup(String sip, String dip)
         {
             Boolean found = false;
-            foreach (ccIPAddress a in ipList)
+            foreach (IPRecord a in ipList)
             {
 
                 if (a != null)
@@ -439,8 +484,8 @@ namespace Eevee
             //is being carried by it
             IPHeader ipHeader = new IPHeader(byteData, nReceived);
 
-            TreeNode ipNode = MakeIPTreeNode(ipHeader);
-            rootNode.Nodes.Add(ipNode);
+           // TreeNode ipNode = MakeIPTreeNode(ipHeader);
+           // rootNode.Nodes.Add(ipNode);
             loggingMessage += (ipHeader.SourceAddress + " >>>> " + ipHeader.DestinationAddress) + "\n";
 
 
@@ -453,54 +498,16 @@ namespace Eevee
             {
                 case Protocol.TCP:
 
-                    TCPHeader tcpHeader = new TCPHeader(ipHeader.Data,              //IPHeader.Data stores the data being 
-                                                                                    //carried by the IP datagram
-                                                        ipHeader.MessageLength);//Length of the data field                    
-
-                    TreeNode tcpNode = MakeTCPTreeNode(tcpHeader);
-
-                    rootNode.Nodes.Add(tcpNode);
-
-                    //If the port is equal to 53 then the underlying protocol is DNS
-                    //Note: DNS can use either TCP or UDP thats why the check is done twice
-                    if (tcpHeader.DestinationPort == "53" || tcpHeader.SourcePort == "53")
-                    {
-
-                        TreeNode dnsNode = MakeDNSTreeNode(tcpHeader.Data, (int)tcpHeader.MessageLength);
-                        rootNode.Nodes.Add(dnsNode);
-                    }
-
                     break;
 
                 case Protocol.UDP:
 
-                    UDPHeader udpHeader = new UDPHeader(ipHeader.Data,              //IPHeader.Data stores the data being 
-                                                                                    //carried by the IP datagram
-                                                       (int)ipHeader.MessageLength);//Length of the data field                    
-
-                    TreeNode udpNode = MakeUDPTreeNode(udpHeader);
-
-                    rootNode.Nodes.Add(udpNode);
-
-                    //If the port is equal to 53 then the underlying protocol is DNS
-                    //Note: DNS can use either TCP or UDP thats why the check is done twice
-                    if (udpHeader.DestinationPort == "53" || udpHeader.SourcePort == "53")
-                    {
-
-                        TreeNode dnsNode = MakeDNSTreeNode(udpHeader.Data,
-                                                           //Length of UDP header is always eight bytes so we subtract that out of the total 
-                                                           //length to find the length of the data
-                                                           Convert.ToInt32(udpHeader.Length) - 8);
-                        rootNode.Nodes.Add(dnsNode);
-                    }
-
+                  
                     break;
 
                 case Protocol.Unknown:
                     break;
             }
-
-            AddTreeNode addTreeNode = new AddTreeNode(OnAddTreeNode);
 
             rootNode.Text = ipHeader.SourceAddress.ToString() + "-" +
                 ipHeader.DestinationAddress.ToString();
@@ -509,103 +516,9 @@ namespace Eevee
             // treeView.Invoke(addTreeNode, new object[] { rootNode });
         }
 
-        //Helper function which returns the information contained in the IP header as a
-        //tree node
-        private TreeNode MakeIPTreeNode(IPHeader ipHeader)
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            TreeNode ipNode = new TreeNode();
-
-            ipNode.Text = "IP";
-            ipNode.Nodes.Add("Ver: " + ipHeader.Version);
-            ipNode.Nodes.Add("Header Length: " + ipHeader.HeaderLength);
-            ipNode.Nodes.Add("Differntiated Services: " + ipHeader.DifferentiatedServices);
-            ipNode.Nodes.Add("Total Length: " + ipHeader.TotalLength);
-            ipNode.Nodes.Add("Identification: " + ipHeader.Identification);
-            ipNode.Nodes.Add("Flags: " + ipHeader.Flags);
-            ipNode.Nodes.Add("Fragmentation Offset: " + ipHeader.FragmentationOffset);
-            ipNode.Nodes.Add("Time to live: " + ipHeader.TTL);
-            switch (ipHeader.ProtocolType)
-            {
-                case Protocol.TCP:
-                    ipNode.Nodes.Add("Protocol: " + "TCP");
-                    break;
-                case Protocol.UDP:
-                    ipNode.Nodes.Add("Protocol: " + "UDP");
-                    break;
-                case Protocol.Unknown:
-                    ipNode.Nodes.Add("Protocol: " + "Unknown");
-                    break;
-            }
-            ipNode.Nodes.Add("Checksum: " + ipHeader.Checksum);
-            ipNode.Nodes.Add("Source: " + ipHeader.SourceAddress.ToString());
-            ipNode.Nodes.Add("Destination: " + ipHeader.DestinationAddress.ToString());
-
-            return ipNode;
-        }
-
-        //Helper function which returns the information contained in the TCP header as a
-        //tree node
-        private TreeNode MakeTCPTreeNode(TCPHeader tcpHeader)
-        {
-            TreeNode tcpNode = new TreeNode();
-
-            tcpNode.Text = "TCP";
-
-            tcpNode.Nodes.Add("Source Port: " + tcpHeader.SourcePort);
-            tcpNode.Nodes.Add("Destination Port: " + tcpHeader.DestinationPort);
-            tcpNode.Nodes.Add("Sequence Number: " + tcpHeader.SequenceNumber);
-
-            if (tcpHeader.AcknowledgementNumber != "")
-                tcpNode.Nodes.Add("Acknowledgement Number: " + tcpHeader.AcknowledgementNumber);
-
-            tcpNode.Nodes.Add("Header Length: " + tcpHeader.HeaderLength);
-            tcpNode.Nodes.Add("Flags: " + tcpHeader.Flags);
-            tcpNode.Nodes.Add("Window Size: " + tcpHeader.WindowSize);
-            tcpNode.Nodes.Add("Checksum: " + tcpHeader.Checksum);
-
-            if (tcpHeader.UrgentPointer != "")
-                tcpNode.Nodes.Add("Urgent Pointer: " + tcpHeader.UrgentPointer);
-
-            return tcpNode;
-        }
-
-        //Helper function which returns the information contained in the UDP header as a
-        //tree node
-        private TreeNode MakeUDPTreeNode(UDPHeader udpHeader)
-        {
-            TreeNode udpNode = new TreeNode();
-
-            udpNode.Text = "UDP";
-            udpNode.Nodes.Add("Source Port: " + udpHeader.SourcePort);
-            udpNode.Nodes.Add("Destination Port: " + udpHeader.DestinationPort);
-            udpNode.Nodes.Add("Length: " + udpHeader.Length);
-            udpNode.Nodes.Add("Checksum: " + udpHeader.Checksum);
-
-            return udpNode;
-        }
-
-        //Helper function which returns the information contained in the DNS header as a
-        //tree node
-        private TreeNode MakeDNSTreeNode(byte[] byteData, int nLength)
-        {
-            DNSHeader dnsHeader = new DNSHeader(byteData, nLength);
-
-            TreeNode dnsNode = new TreeNode();
-
-            dnsNode.Text = "DNS";
-            dnsNode.Nodes.Add("Identification: " + dnsHeader.Identification);
-            dnsNode.Nodes.Add("Flags: " + dnsHeader.Flags);
-            dnsNode.Nodes.Add("Questions: " + dnsHeader.TotalQuestions);
-            dnsNode.Nodes.Add("Answer RRs: " + dnsHeader.TotalAnswerRRs);
-            dnsNode.Nodes.Add("Authority RRs: " + dnsHeader.TotalAuthorityRRs);
-            dnsNode.Nodes.Add("Additional RRs: " + dnsHeader.TotalAdditionalRRs);
-
-            return dnsNode;
-        }
-
-        private void OnAddTreeNode(TreeNode node)
-        {
-            // treeView.Nodes.Add(node);
+            Application.Exit();
         }
 
         private void liveCapButton_Click(object sender, EventArgs e)
@@ -666,16 +579,5 @@ namespace Eevee
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-            ccIPAddress s = new ccIPAddress();
-            ccIPAddress d = new ccIPAddress();
-            s.loc = "loc\": \"47.6801,-100.1206\"";
-            d.loc = "loc\": \"28.6801,-81.1206\"";
-            s.parseLon();
-            d.parseLon();
-
-            ipPing = new ipPingGraphic(d, s, new Point(pictureBox1.Width, pictureBox1.Height));
-        }
     }
 }
