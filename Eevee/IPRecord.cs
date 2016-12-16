@@ -60,12 +60,22 @@ namespace Eevee
         public int packetsSent = 0;
         public int packetsReceived = 0;
         public bool ping = false;
+        internal SocketMonitor.MibTcpState state;
 
         public void setIp(string input)
         {
             this.ip = input;
             label1.Text = input;
+            label2.Text = state.ToString();
+            label3.Text = processName;
         }
+
+        public void updateState(SocketMonitor.MibTcpState s){
+            state = s;
+            label2.Text = state.ToString();
+            label3.Text = processName;
+        }
+
         public void parseLon()
         {
             latitude = Convert.ToDouble(loc.Remove(0, loc.IndexOf(":") + 1).Replace("\"", "").Split(',')[0]); ;
